@@ -17,7 +17,7 @@ function editableValidationRules(){
     //check if current validationName isExist
     if(angular.isDefined(validatorFuncs[options.validatorName]))
       {
-        throw 'Your validation name : "'+options.validatorName+'" already exists';
+        console.log('Your validation name : "'+options.validatorName+'" already exists, we will override it');
       }
     // If there is no exist validator, then push it to the list
     validatorFuncs[options.validatorName] = options.validationFunc;
@@ -47,11 +47,11 @@ function editableValidationRules(){
 editableValidator.$inject = ['$q','editableValidationRules'];
 function editableValidator($q,editableValidationRules){
    var validator = {};
-   function runValidate(value, validationName){
+   function runValidate(value, validationName,element){
     var deferred = $q.defer();
     var validateResult;
     var validatorFunc = editableValidationRules.getValidatorFunc(validationName);
-    validateResult = validatorFunc(value);
+    validateResult = validatorFunc(value,element);
     if(angular.isObject(validateResult))
     {
       validateResult.then(function(result){
@@ -87,7 +87,7 @@ function editableValidator($q,editableValidationRules){
     }
     return deferred.promise;
    }
-  validator.validate = function (value, validatorNames){
+  validator.validate = function (value, validatorNames, element){
     var validatorList = validatorNames.split(','),
         validatorName;
        
@@ -97,7 +97,7 @@ function editableValidator($q,editableValidationRules){
     for(var i = 0; i < validatorList.length; i++)
     {
       validatorName = validatorList[i].trim();
-      promiseList.push(runValidate(value, validatorName));
+      promiseList.push(runValidate(value, validatorName,element));
     }
 
     var promises = $q.all(promiseList).then(function(values){
